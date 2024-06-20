@@ -56,6 +56,9 @@ class DrawableSpace extends Space{
         this.ctx = ctx;
         this.updateMinMax(min_y, min_x, max_x, ctx);
         this.addAllEventListener();
+
+        this.isDragging = false;
+        this.last_drag_position = {x: 0, y: 0};
     }
 
     
@@ -135,6 +138,28 @@ class DrawableSpace extends Space{
         this.updateMinMax(this.min_y - y_delta, this.min_x - delta, this.max_x + delta);
     }
 
+    drag(new_x, new_y) {
+        var mouse_sensitivity = 0.1;
+        var miror_drag_mode = true;
+
+        var delta_x = Math.round((new_x - this.last_drag_position.x) * mouse_sensitivity);
+        var delta_y = Math.round((new_y - this.last_drag_position.y) * mouse_sensitivity);
+
+        if(miror_drag_mode){
+            delta_x = -delta_x;
+            delta_y = -delta_y;
+        }
+
+        if(delta_x != 0){
+            this.last_drag_position.x = new_x;
+        }
+        if(delta_y != 0){
+            this.last_drag_position.y = new_y;
+        }
+
+        this.updateMinMax(this.min_y + delta_y, this.min_x + delta_x, this.max_x + delta_x);
+    }
+
     
     addAllEventListener() {
         window.addEventListener("wheel", event => {
@@ -146,9 +171,23 @@ class DrawableSpace extends Space{
             e.preventDefault();
         }, false);
 
-        window.addEventListener('mousedown', function(e) {
-            console.log(e);
-            console.log(e.clientX, e.clientY);
+        // Mouse down event to start dragging
+        window.addEventListener('mousedown', (e) => {
+            this.isDragging = true;
+            this.last_drag_position = {x: e.clientX, y: e.clientY};
+        });
+
+        // Mouse move event to handle dragging
+        window.addEventListener('mousemove', (e) => {
+            if (this.isDragging) {
+                this.drag(e.clientX, e.clientY);
+            }
+        });
+
+        // Mouse up event to stop dragging
+        window.addEventListener('mouseup', () => {
+            this.isDragging = false;
+            this.last_drag_position = {x: 0, y: 0};
         });
     }
 }
