@@ -49,6 +49,52 @@ class Space{
 
 }
 
+class DragSystem {
+    constructor(mouse_sensitivity = 0.1, miror_drag_mode = true) {
+        this.is_dragging = false;
+        this.last_drag_position = {x: 0, y: 0};
+        this.mouse_sensitivity = mouse_sensitivity;
+        this.miror_drag_mode = miror_drag_mode;
+    }
+
+    drag(new_x, new_y) {
+        var delta_x = Math.round((new_x - this.last_drag_position.x) * this.mouse_sensitivity);
+        var delta_y = Math.round((new_y - this.last_drag_position.y) * this.mouse_sensitivity);
+
+        if(this.miror_drag_mode){
+            delta_x = -delta_x;
+            delta_y = -delta_y;
+        }
+
+        if(delta_x != 0){
+            this.last_drag_position.x = new_x;
+        }
+        if(delta_y != 0){
+            this.last_drag_position.y = new_y;
+        }
+
+        return {x: delta_x, y: delta_y};
+    }
+
+    isDragging() {
+        return this.is_dragging;
+    }
+
+    setDraging(bool) {
+        this.is_dragging = bool;
+    }
+
+    setLastDragPosition(x, y) {
+        this.last_drag_position.x = x;
+        this.last_drag_position.y = y;
+    }
+
+    resetLastDragPosition() {
+        this.last_drag_position.x = 0;
+        this.last_drag_position.y = 0;
+    }
+}
+
 class DrawableSpace extends Space{
     
     constructor(min_y, min_x, max_x, ctx) {
@@ -57,8 +103,7 @@ class DrawableSpace extends Space{
         this.updateMinMax(min_y, min_x, max_x, ctx);
         this.addAllEventListener();
 
-        this.isDragging = false;
-        this.last_drag_position = {x: 0, y: 0};
+        this.drag_system = new DragSystem(0.1, true);
     }
 
     
@@ -139,25 +184,8 @@ class DrawableSpace extends Space{
     }
 
     drag(new_x, new_y) {
-        var mouse_sensitivity = 0.1;
-        var miror_drag_mode = true;
-
-        var delta_x = Math.round((new_x - this.last_drag_position.x) * mouse_sensitivity);
-        var delta_y = Math.round((new_y - this.last_drag_position.y) * mouse_sensitivity);
-
-        if(miror_drag_mode){
-            delta_x = -delta_x;
-            delta_y = -delta_y;
-        }
-
-        if(delta_x != 0){
-            this.last_drag_position.x = new_x;
-        }
-        if(delta_y != 0){
-            this.last_drag_position.y = new_y;
-        }
-
-        this.updateMinMax(this.min_y + delta_y, this.min_x + delta_x, this.max_x + delta_x);
+        var delta = this.drag_system.drag(new_x, new_y);
+        this.updateMinMax(this.min_y + delta.y, this.min_x + delta.x, this.max_x + delta.x);
     }
 
     
@@ -173,21 +201,21 @@ class DrawableSpace extends Space{
 
         // Mouse down event to start dragging
         window.addEventListener('mousedown', (e) => {
-            this.isDragging = true;
-            this.last_drag_position = {x: e.clientX, y: e.clientY};
+            this.drag_system.setDraging(true);
+            this.drag_system.setLastDragPosition(e.clientX, e.clientY);
         });
 
         // Mouse move event to handle dragging
         window.addEventListener('mousemove', (e) => {
-            if (this.isDragging) {
+            if (this.drag_system.isDragging()) {
                 this.drag(e.clientX, e.clientY);
             }
         });
 
         // Mouse up event to stop dragging
         window.addEventListener('mouseup', () => {
-            this.isDragging = false;
-            this.last_drag_position = {x: 0, y: 0};
+            this.drag_system.setDraging(false);
+            this.drag_system.resetLastDragPosition();
         });
     }
 }
