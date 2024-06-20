@@ -61,17 +61,25 @@ class DrawableSpace extends Space{
     
 
     updateMinMax(min_y, min_x, max_x) {
+        var nb_cells_width = max_x - min_x;
+        var cells_size = Math.floor(this.ctx.canvas.width / nb_cells_width);
+        var nb_cells_height = Math.floor(ctx.canvas.height / cells_size);
+
+        if(nb_cells_width < 1 || nb_cells_height < 1) return;
+
+        this.nb_cells_width = nb_cells_width;
+        this.cells_size = cells_size;
+        this.nb_cells_height = nb_cells_height;
+
         this.min_y = min_y;
         this.min_x = min_x;
         this.max_x = max_x;
 
-        this.nb_cells_width = max_x - min_x;
-        this.cells_size = Math.floor(this.ctx.canvas.width / this.nb_cells_width);
-        this.nb_cells_height = Math.floor(ctx.canvas.height / this.cells_size);
-
         this.margin_x = Math.floor((this.ctx.canvas.width - this.nb_cells_width * this.cells_size) / 2);
         this.margin_y = Math.floor((this.ctx.canvas.height - this.nb_cells_height * this.cells_size) / 2);
 
+        console.log('---------------');
+        console.log('min_y :',this.min_y);
         console.log('min_x :',this.min_x);
         console.log('max_x :',this.max_x);
         console.log('nb_cells_width :',this.nb_cells_width);
@@ -121,9 +129,10 @@ class DrawableSpace extends Space{
     }
 
     zoom(delta) {
-        var new_min_y = this.min_y - (delta * this.nb_cells_height / this.nb_cells_width);
-        
-        this.updateMinMax(this.min_y, this.min_x - delta, this.max_x + delta);
+        if(this.nb_cells_width < 2 && delta <= 0) return;
+
+        var y_delta = Math.round(delta * this.nb_cells_height / this.nb_cells_width);
+        this.updateMinMax(this.min_y - y_delta, this.min_x - delta, this.max_x + delta);
     }
 
     
