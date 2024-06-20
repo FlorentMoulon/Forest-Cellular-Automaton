@@ -87,13 +87,13 @@ class DrawableSpace extends Space{
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         //draw cells
-        for (var i = this.min_x; i < this.nb_cells_width; i++) {
-            for (var j = this.min_y; j < this.nb_cells_height; j++) {
-                if(this.cells.get(i,j) == 1){
+        for (var i = 0; i < this.nb_cells_width; i++) {
+            for (var j = 0; j < this.nb_cells_height; j++) {
+                if(this.cells.get(i+this.min_x, j+this.min_y) == 1){
                     ctx.fillStyle = COLOR.root;
                     ctx.fillRect(i * this.cells_size + this.margin_x, j * this.cells_size + this.margin_y, this.cells_size, this.cells_size);
                 }
-                else if(this.cells.get(i,j) == 2){
+                else if(this.cells.get(i+this.min_x, j+this.min_y) == 2){
                     ctx.fillStyle = COLOR.tree;
                     ctx.fillRect(i * this.cells_size + this.margin_x, j * this.cells_size + this.margin_y, this.cells_size, this.cells_size);
                 }
