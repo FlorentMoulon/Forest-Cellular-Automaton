@@ -15,6 +15,13 @@ const COLOR = {
     red: '#bc4749',
 }
 
+BORDER_WIDTH_THRESHOLD = [
+    {over_cell_size: 0, border_width: 0},
+    {over_cell_size: 10, border_width: 0.5},
+    {over_cell_size: 20, border_width: 1},
+    {over_cell_size: 60, border_width: 2},
+]; 
+
 
 
 
@@ -160,8 +167,20 @@ class DrawableSpace extends Space{
         this.drawBorder(ctx);
     }
 
+    findBorderWidth() {
+        var border_width = BORDER_WIDTH_THRESHOLD[0].border_width;
+
+        for (var i = BORDER_WIDTH_THRESHOLD.length-1; i > 0; i--) {
+            if(this.cells_size > BORDER_WIDTH_THRESHOLD[i].over_cell_size){
+                return border_width = BORDER_WIDTH_THRESHOLD[i].border_width;
+            }
+        }
+
+        return border_width;
+    }
+
     drawBorder(ctx) {
-        var border_width = 2;
+        var border_width = this.findBorderWidth();
     
         ctx.fillStyle = COLOR.border;
         
