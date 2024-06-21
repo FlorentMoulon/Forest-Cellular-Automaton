@@ -9,7 +9,7 @@ window.addEventListener('resize', function(){
 const COLOR = {
     empty: '#f2e8cf',
     root: '#a7c957',
-    tree: '#f2e8cf',
+    tree: '#386641',
     border: '#3c2f2f',
     dark_green: '#386641',
     red: '#bc4749',
@@ -20,41 +20,19 @@ BORDER_WIDTH_THRESHOLD = [
     {over_cell_size: 10, border_width: 0.5},
     {over_cell_size: 20, border_width: 1},
     {over_cell_size: 60, border_width: 2},
-]; 
+];
+
+ROOT_EMERGENCE_PROBABILITY = 0.5; // between 0 and 1, 0 = 0% and 1 = 100%
+
+ROOT_SPONTANEOUS_APPEARANCE_DYING_PROBABILITY = 0.1; // between 0 and 1, 0 = 0% and 1 = 100%
+
+MINIMUM_ROOTS_NEAR_TO_PERSIST = 0;
+MAXIMUM_ROOTS_NEAR_TO_PERSIST = 3;
+
+MINIMUM_ROOTS_NEAR_TO_APPEAR = 1;
+MAXIMUM_ROOTS_NEAR_TO_APPEAR = 1;
 
 
-
-
-class Cells {
-    constructor() {
-        this.cells = new Map();
-    }
-
-    get(x, y) {
-        var a = this.cells.get(x);
-        if(a == undefined) return 0;
-
-        var b = a.get(y);
-        if(b == undefined) return 0;
-
-        return b;
-    }
-
-    set(x, y, value) {
-        if(this.cells.get(x) == undefined) this.cells.set(x, new Map());
-        this.cells.get(x).set(y, value);
-    }
-}
-
-class Space{
-
-    constructor() {
-        this.cells = new Cells();
-
-        this.cells.set(3, 3, 1);
-    }
-
-}
 
 class DragSystem {
     constructor() {
@@ -96,6 +74,128 @@ class DragSystem {
 
     getMouseGridPositionY(y, min_y, max_y, canvas_height) {
         return Math.floor((max_y - min_y) * (y / canvas_height)) + min_y;
+    }
+}
+
+
+class Cells {
+    constructor() {
+        this.cells = new Map();
+    }
+
+    get(x, y) {
+        var cell =  this.cells.get(`${x}:${y}`);
+        if(cell == undefined) return 0;
+        return cell;
+    }
+
+    set(x, y, value) {
+        this.cells.set(`${x}:${y}`, value);
+    }
+    
+    forEach(callback) {
+        this.cells.forEach(callback);
+    }
+}
+
+class Space{
+
+    constructor() {
+        this.cells = new Cells();
+
+        this.cells.set(3, 3, 1);
+    }
+
+    updateCells() {
+        var new_cells = new Cells();
+        
+        new_cells = this.propagateRoots(this.cells, new_cells);
+        new_cells = this.killRoots(this.cells, new_cells);
+
+        this.cells = new_cells;
+    }
+
+    propagateRoots(current_cells, new_cells) {
+        var potential_root = new Set();
+
+        current_cells.forEach((value, key) => {
+            if (value != 1) return;
+
+            var x = parseInt(key.split(':')[0]);
+            var y = parseInt(key.split(':')[1]);
+
+            // we keep old roots for now
+            new_cells.set(x, y, 1);
+
+            // we collect cell where root can appear
+            potential_root = this.addPotentialRoot(x, y, potential_root, current_cells);
+        });
+
+        // we propagate roots
+        potential_root.forEach((value) => {
+            if(Math.random() < ROOT_EMERGENCE_PROBABILITY){
+                new_cells.set(value.x, value.y, 1);
+            }
+        });
+
+        return new_cells;
+    }
+
+    killRoots(current_cells, new_cells) {
+        // foreach old root
+        current_cells.forEach((value, key) => {
+            if (value != 1) return;
+
+            var x = parseInt(key.split(':')[0]);
+            var y = parseInt(key.split(':')[1]);
+
+            // we check if the rrot can persist with the new cells
+            if(! this.rootPersist(x, y, new_cells)){
+                // if not we kill it (because it was put in the new cells before during the propagation step)
+                new_cells.set(x, y, 0);
+            }
+            else if(Math.random() < ROOT_SPONTANEOUS_APPEARANCE_DYING_PROBABILITY){
+                // if the root can persist, we check if it dies spontaneously
+                new_cells.set(x, y, 0);
+            }
+        });
+
+        return new_cells;
+    }
+
+    rootPersist(x, y, cells) {
+        var nb_root = this.numberRootsAround(x, y, cells);
+        return (MINIMUM_ROOTS_NEAR_TO_PERSIST<nb_root && nb_root < MAXIMUM_ROOTS_NEAR_TO_PERSIST);
+    }
+
+    numberRootsAround(x, y, cells) {
+        var nb_root = 0;
+        for (var i = -1; i < 2; i++) {
+            for (var j = -1; j < 2; j++) {
+                if((i!=0 || j!=0) && cells.get(x+i, y+j) == 1){
+                    nb_root++;
+                }
+            }
+        }
+
+        return nb_root;
+    }
+
+    addPotentialRoot(x, y, potential_root, cells) {
+        // a root can progate on free cells around that only have 1 root around
+        // we check the 8 cells around the root (x,y)
+
+        for (var i = -1; i < 2; i++) {
+            for (var j = -1; j < 2; j++) {
+                if(!((i!=0 || j!=0) && cells.get(x+i, y+j) == 0)) continue;
+                if(this.numberRootsAround(x+i, y+j, cells) < MINIMUM_ROOTS_NEAR_TO_APPEAR) continue;
+                if(this.numberRootsAround(x+i, y+j, cells) > MAXIMUM_ROOTS_NEAR_TO_APPEAR) continue;
+                    
+                potential_root.add({x: x+i, y: y+j});
+            }
+        }
+
+        return potential_root;
     }
 }
 
@@ -209,14 +309,15 @@ class DrawableSpace extends Space{
 
     
     addAllEventListener() {
-        window.addEventListener("wheel", event => {
-            const delta = Math.sign(event.deltaY);
+        window.addEventListener("wheel", e => {
+            const delta = Math.sign(e.deltaY);
             this.zoom(delta);
         });
 
-        window.addEventListener('contextmenu', function(e) {
+        window.addEventListener('contextmenu', e =>{
             e.preventDefault();
-        }, false);
+            this.updateCells();
+        });
 
         // Mouse down event to start dragging
         window.addEventListener('mousedown', (e) => {
@@ -253,12 +354,9 @@ window.addEventListener('load', function(){
     var ctx = getCanvas();
     var space = new DrawableSpace(0, 0, 10, ctx);
 
-
     function draw() {
 
         space.drawSpace(ctx);
-    
-        //space.updateCells();
     
         window.requestAnimationFrame(draw);
     }
