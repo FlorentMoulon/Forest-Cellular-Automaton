@@ -44,34 +44,23 @@ class Space{
     constructor() {
         this.cells = new Cells();
 
-        this.cells.set(5, 5, 1);
+        this.cells.set(3, 3, 1);
     }
 
 }
 
 class DragSystem {
-    constructor(mouse_sensitivity = 0.1, miror_drag_mode = true) {
+    constructor() {
         this.is_dragging = false;
-        this.last_drag_position = {x: 0, y: 0};
-        this.mouse_sensitivity = mouse_sensitivity;
-        this.miror_drag_mode = miror_drag_mode;
+        this.last_mouse_position = {x: 0, y: 0};
     }
 
-    drag(new_x, new_y) {
-        var delta_x = Math.round((new_x - this.last_drag_position.x) * this.mouse_sensitivity);
-        var delta_y = Math.round((new_y - this.last_drag_position.y) * this.mouse_sensitivity);
+    drag(new_x, new_y, min_x, max_x, min_y, max_y, canvas_width, canvas_height) {
+        var mouse_x = this.getMouseGridPositionX(new_x, min_x, max_x, canvas_width);
+        var mouse_y = this.getMouseGridPositionY(new_y, min_y, max_y, canvas_height);
 
-        if(this.miror_drag_mode){
-            delta_x = -delta_x;
-            delta_y = -delta_y;
-        }
-
-        if(delta_x != 0){
-            this.last_drag_position.x = new_x;
-        }
-        if(delta_y != 0){
-            this.last_drag_position.y = new_y;
-        }
+        var delta_x = this.last_mouse_position.x - mouse_x;
+        var delta_y = this.last_mouse_position.y - mouse_y;
 
         return {x: delta_x, y: delta_y};
     }
@@ -84,14 +73,22 @@ class DragSystem {
         this.is_dragging = bool;
     }
 
-    setLastDragPosition(x, y) {
-        this.last_drag_position.x = x;
-        this.last_drag_position.y = y;
+    setLastDragPosition(x, y, min_x, max_x, min_y, max_y, canvas_width, canvas_height) {
+        this.last_mouse_position.x = this.getMouseGridPositionX(x, min_x, max_x, canvas_width);
+        this.last_mouse_position.y = this.getMouseGridPositionY(y, min_y, max_y, canvas_height);
     }
 
     resetLastDragPosition() {
-        this.last_drag_position.x = 0;
-        this.last_drag_position.y = 0;
+        this.last_mouse_position.x = 0;
+        this.last_mouse_position.y = 0;
+    }
+
+    getMouseGridPositionX(x, min_x, max_x, canvas_width) {
+        return Math.floor((max_x - min_x) * (x / canvas_width)) + min_x;
+    }
+
+    getMouseGridPositionY(y, min_y, max_y, canvas_height) {
+        return Math.floor((max_y - min_y) * (y / canvas_height)) + min_y;
     }
 }
 
@@ -126,18 +123,16 @@ class DrawableSpace extends Space{
         this.margin_x = Math.floor((this.ctx.canvas.width - this.nb_cells_width * this.cells_size) / 2);
         this.margin_y = Math.floor((this.ctx.canvas.height - this.nb_cells_height * this.cells_size) / 2);
 
-        console.log('---------------');
-        console.log('min_y :',this.min_y);
-        console.log('min_x :',this.min_x);
-        console.log('max_x :',this.max_x);
-        console.log('nb_cells_width :',this.nb_cells_width);
-        console.log('cells_size :',this.cells_size);
-        console.log('nb_cells_height :',this.nb_cells_height);
+        // console.log('---------------');
+        // console.log('min_y :',this.min_y);
+        // console.log('min_x :',this.min_x);
+        // console.log('max_x :',this.max_x);
+        // console.log('nb_cells_width :',this.nb_cells_width);
+        // console.log('cells_size :',this.cells_size);
+        // console.log('nb_cells_height :',this.nb_cells_height);
     }
 
     drawSpace(ctx) {
-        //console.log('drawSpace');
-
         //clear canvas
         ctx.fillStyle = COLOR.empty;
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -153,6 +148,11 @@ class DrawableSpace extends Space{
                     ctx.fillStyle = COLOR.tree;
                     ctx.fillRect(i * this.cells_size + this.margin_x, j * this.cells_size + this.margin_y, this.cells_size, this.cells_size);
                 }
+
+                // ctx.fillStyle = COLOR.border;
+                // ctx.font = "20px Arial";
+                // var label = (i+this.min_x) +":"+ (j+this.min_y)
+                // ctx.fillText(label, i * this.cells_size + this.margin_x + 10, j * this.cells_size + this.margin_y+ this.cells_size/2);
             }
         }
 
@@ -184,7 +184,7 @@ class DrawableSpace extends Space{
     }
 
     drag(new_x, new_y) {
-        var delta = this.drag_system.drag(new_x, new_y);
+        var delta = this.drag_system.drag(new_x, new_y, this.min_x, this.max_x, this.min_y, this.min_y+this.nb_cells_height, this.ctx.canvas.width-this.margin_x, this.ctx.canvas.height-this.margin_y);
         this.updateMinMax(this.min_y + delta.y, this.min_x + delta.x, this.max_x + delta.x);
     }
 
@@ -202,7 +202,7 @@ class DrawableSpace extends Space{
         // Mouse down event to start dragging
         window.addEventListener('mousedown', (e) => {
             this.drag_system.setDraging(true);
-            this.drag_system.setLastDragPosition(e.clientX, e.clientY);
+            this.drag_system.setLastDragPosition(e.clientX, e.clientY, this.min_x, this.max_x, this.min_y, this.min_y+this.nb_cells_height, this.ctx.canvas.width-this.margin_x, this.ctx.canvas.height-this.margin_y);
         });
 
         // Mouse move event to handle dragging
