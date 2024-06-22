@@ -24,14 +24,55 @@ BORDER_WIDTH_THRESHOLD = [
 
 ROOT_EMERGENCE_PROBABILITY = 0.5; // between 0 and 1, 0 = 0% and 1 = 100%
 
-ROOT_SPONTANEOUS_APPEARANCE_DYING_PROBABILITY = 0.1; // between 0 and 1, 0 = 0% and 1 = 100%
+ROOT_SPONTANEOUS_APPEARANCE_DYING_PROBABILITY = 0; // between 0 and 1, 0 = 0% and 1 = 100%
 
 MINIMUM_ROOTS_NEAR_TO_PERSIST = 0;
-MAXIMUM_ROOTS_NEAR_TO_PERSIST = 3;
+MAXIMUM_ROOTS_NEAR_TO_PERSIST = 8;
 
 MINIMUM_ROOTS_NEAR_TO_APPEAR = 1;
 MAXIMUM_ROOTS_NEAR_TO_APPEAR = 1;
 
+
+
+class InputHandler{
+    constructor() {
+        this.keys = [];
+    
+        window.addEventListener("keydown", e => {
+            if (!this.keys.includes(e.key))
+            this.keys.push(e.key);
+        });
+    
+        window.addEventListener("keyup", e => {
+            this.keys = this.keys.filter(key => key !== e.key);
+        });
+
+        window.addEventListener("mousedown" , e => {
+            if (!this.keys.includes(e.button.toString()))
+            this.keys.push(e.button.toString());
+        });
+
+        window.addEventListener("mouseup" , e => {
+            this.keys = this.keys.filter(key => key !== e.button.toString());
+        });
+    }
+
+    getInput() {
+        return this.keys;
+    }
+
+    isInputPressed(key) {
+        return this.keys.includes(key);
+    }
+
+    isInputPressedAny(keys) {
+        return keys.some(key => this.keys.includes(key));
+    }
+
+    isInputPressedAll(keys) {
+        return keys.every(key => this.keys.includes(key));
+    }
+}
 
 
 class DragSystem {
@@ -208,6 +249,7 @@ class DrawableSpace extends Space{
         this.addAllEventListener();
 
         this.drag_system = new DragSystem(0.1, true);
+        this.input_handler = new InputHandler();
     }
 
     
@@ -310,7 +352,10 @@ class DrawableSpace extends Space{
     
     addAllEventListener() {
         window.addEventListener("wheel", e => {
-            const delta = Math.sign(e.deltaY);
+            var delta = Math.sign(e.deltaY);
+            if(this.input_handler.isInputPressed("Shift")){
+                delta *= 10;
+            }
             this.zoom(delta);
         });
 
