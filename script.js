@@ -118,6 +118,30 @@ class DragSystem {
     }
 }
 
+class Menu {
+    constructor() {
+        this.menu = document.querySelector('.menu');
+        this.pause_button = document.querySelector('.pause');
+        this.play_button = document.querySelector('.play');
+    }
+
+    setPause(isPaused) {
+        if(isPaused){
+            this.menu.classList.add('paused');
+        }else{
+            this.menu.classList.remove('paused');
+        }
+    }
+
+    addPauseEventListener(callback) {
+        this.pause_button.addEventListener('click', callback);
+    }
+
+    addPlayEventListener(callback) {
+        this.play_button.addEventListener('click', callback);
+    }
+}
+
 
 class Cells {
     constructor() {
@@ -246,10 +270,13 @@ class DrawableSpace extends Space{
         super();
         this.ctx = ctx;
         this.updateMinMax(min_y, min_x, max_x, ctx);
-        this.addAllEventListener();
 
         this.drag_system = new DragSystem(0.1, true);
         this.input_handler = new InputHandler();
+        this.menu = new Menu();
+
+        this.is_paused = true;
+        this.addAllEventListener();
     }
 
     
@@ -381,6 +408,20 @@ class DrawableSpace extends Space{
         window.addEventListener('mouseup', () => {
             this.drag_system.setDraging(false);
             this.drag_system.resetLastDragPosition();
+        });
+
+        this.menu.addPlayEventListener(() => {
+            if(this.is_paused){
+                this.is_paused = false;
+                this.menu.setPause(false);
+            }
+        });
+
+        this.menu.addPauseEventListener(() => {
+            if(!this.is_paused){
+                this.is_paused = true;
+                this.menu.setPause(true);
+            }
         });
     }
 }
