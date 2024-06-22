@@ -34,6 +34,8 @@ MAXIMUM_ROOTS_NEAR_TO_APPEAR = 1;
 
 COULDOWN = 10;
 
+MAXIMUM_ROOTS_IN_ZONE_TO_APPEAR = 7; // >= 7 to avoid block
+
 
 
 class InputHandler{
@@ -119,6 +121,7 @@ class DragSystem {
         return Math.floor((max_y - min_y) * (y / canvas_height)) + min_y;
     }
 }
+
 
 class Menu {
     constructor() {
@@ -235,10 +238,12 @@ class Space{
         return (MINIMUM_ROOTS_NEAR_TO_PERSIST<nb_root && nb_root < MAXIMUM_ROOTS_NEAR_TO_PERSIST);
     }
 
-    numberRootsAround(x, y, cells) {
+    numberRootsAround(x, y, cells, size=1) {
+        // check the 8 cells around the root (x,y)
+
         var nb_root = 0;
-        for (var i = -1; i < 2; i++) {
-            for (var j = -1; j < 2; j++) {
+        for (var i = -size; i < size+1; i++) {
+            for (var j = -size; j < size+1; j++) {
                 if((i!=0 || j!=0) && cells.get(x+i, y+j) == 1){
                     nb_root++;
                 }
@@ -255,8 +260,11 @@ class Space{
         for (var i = -1; i < 2; i++) {
             for (var j = -1; j < 2; j++) {
                 if(!((i!=0 || j!=0) && cells.get(x+i, y+j) == 0)) continue;
-                if(this.numberRootsAround(x+i, y+j, cells) < MINIMUM_ROOTS_NEAR_TO_APPEAR) continue;
-                if(this.numberRootsAround(x+i, y+j, cells) > MAXIMUM_ROOTS_NEAR_TO_APPEAR) continue;
+                var nb_root_around = this.numberRootsAround(x+i, y+j, cells);
+                if(nb_root_around < MINIMUM_ROOTS_NEAR_TO_APPEAR) continue;
+                if(nb_root_around > MAXIMUM_ROOTS_NEAR_TO_APPEAR) continue;
+
+                if(this.numberRootsAround(x+i, y+j, cells, 3) > MAXIMUM_ROOTS_IN_ZONE_TO_APPEAR) continue;
                     
                 potential_root.add({x: x+i, y: y+j});
             }
@@ -392,6 +400,11 @@ class DrawableSpace extends Space{
         window.addEventListener('contextmenu', e =>{
             e.preventDefault();
             this.updateCells();
+            if(this.input_handler.isInputPressed("Control")){
+                for (var i = 0; i < 9; i++) {
+                    this.updateCells();
+                }
+            }
         });
 
         // Mouse down event to start dragging
