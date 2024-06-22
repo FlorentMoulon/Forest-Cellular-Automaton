@@ -22,19 +22,8 @@ BORDER_WIDTH_THRESHOLD = [
     {over_cell_size: 60, border_width: 2},
 ];
 
-ROOT_EMERGENCE_PROBABILITY = 0.5; // between 0 and 1, 0 = 0% and 1 = 100%
-
-ROOT_SPONTANEOUS_APPEARANCE_DYING_PROBABILITY = 0; // between 0 and 1, 0 = 0% and 1 = 100%
-
-MINIMUM_ROOTS_NEAR_TO_PERSIST = 0;
-MAXIMUM_ROOTS_NEAR_TO_PERSIST = 8;
-
-MINIMUM_ROOTS_NEAR_TO_APPEAR = 1;
-MAXIMUM_ROOTS_NEAR_TO_APPEAR = 1;
-
 COULDOWN = 10;
 
-MAXIMUM_ROOTS_IN_ZONE_TO_APPEAR = 7; // >= 7 to avoid block
 
 
 
@@ -125,16 +114,30 @@ class DragSystem {
 
 class Menu {
     constructor() {
-        this.menu = document.querySelector('.menu');
-        this.pause_button = document.querySelector('.pause');
-        this.play_button = document.querySelector('.play');
+        this.play_menu = document.querySelector('#play-menu');
+        this.pause_button = this.play_menu.querySelector('#pause');
+        this.play_button = this.play_menu.querySelector('#play');
+        this.step_button = this.play_menu.querySelector('#step');
+        this.step10_button = this.play_menu.querySelector('#step10');
+
+        this.parameter_menu = document.querySelector('#parameter-menu');
+        this.expander = this.parameter_menu.querySelector('.expander');
+        this.rootEmergenceProbability = this.parameter_menu.querySelector('#rootEmergenceProbability');
+        this.rootSpontaneousAppearanceDyingProbability = this.parameter_menu.querySelector('#rootSpontaneousAppearanceDyingProbability');
+        this.minimumRootsNearToPersist = this.parameter_menu.querySelector('#minimumRootsNearToPersist');
+        this.maximumRootsNearToPersist = this.parameter_menu.querySelector('#maximumRootsNearToPersist');
+        this.minimumRootsNearToAppear = this.parameter_menu.querySelector('#minimumRootsNearToAppear');
+        this.maximumRootsNearToAppear = this.parameter_menu.querySelector('#maximumRootsNearToAppear');
+        this.maximumRootsInZoneToAppear = this.parameter_menu.querySelector('#maximumRootsInZoneToAppear');
+
+        this.addExpanderEventListener();
     }
 
     setPause(isPaused) {
         if(isPaused){
-            this.menu.classList.add('paused');
+            this.play_menu.classList.add('paused');
         }else{
-            this.menu.classList.remove('paused');
+            this.play_menu.classList.remove('paused');
         }
     }
 
@@ -144,6 +147,58 @@ class Menu {
 
     addPlayEventListener(callback) {
         this.play_button.addEventListener('click', callback);
+    }
+
+    addStepEventListener(callback) {
+        this.step_button.addEventListener('click', callback);
+    }
+
+    addStep10EventListener(callback) {
+        this.step10_button.addEventListener('click', callback);
+    }
+
+    addExpanderEventListener() {
+        this.expander.addEventListener('click', () => {
+            this.parameter_menu.classList.toggle('expanded');
+        });
+    }
+
+    getRootEmergenceProbability() {
+        return this.rootEmergenceProbability.value;
+    }
+
+    getRootSpontaneousAppearanceDyingProbability() {
+        return this.rootSpontaneousAppearanceDyingProbability.value;
+    }
+
+    getMinimumRootsNearToPersist() {
+        return this.minimumRootsNearToPersist.value;
+    }
+
+    getMaximumRootsNearToPersist() {
+        return this.maximumRootsNearToPersist.value;
+    }
+
+    getMinimumRootsNearToAppear() {
+        return this.minimumRootsNearToAppear.value;
+    }
+
+    getMaximumRootsNearToAppear() {
+        return this.maximumRootsNearToAppear.value;
+    }
+
+    getMaximumRootsInZoneToAppear() {
+        return this.maximumRootsInZoneToAppear.value;
+    }
+
+    addParameterChangeEventListener(callback) {
+        this.rootEmergenceProbability.addEventListener('change', callback);
+        this.rootSpontaneousAppearanceDyingProbability.addEventListener('change', callback);
+        this.minimumRootsNearToPersist.addEventListener('change', callback);
+        this.maximumRootsNearToPersist.addEventListener('change', callback);
+        this.minimumRootsNearToAppear.addEventListener('change', callback);
+        this.maximumRootsNearToAppear.addEventListener('change', callback);
+        this.maximumRootsInZoneToAppear.addEventListener('change', callback);
     }
 }
 
@@ -172,6 +227,18 @@ class Space{
 
     constructor() {
         this.cells = new Cells();
+
+        this.root_emergence_probability = 0.5; // between 0 and 1, 0 = 0% and 1 = 100%
+
+        this.root_spontaneous_apperance_dying_probability = 0; // between 0 and 1, 0 = 0% and 1 = 100%
+
+        this.minimum_roots_near_to_persist = 0;
+        this.maximum_roots_near_to_persist = 8;
+
+        this.minimum_roots_near_to_appear = 1;
+        this.maximum_roots_near_to_appear = 1;
+
+        this.maximum_roots_in_zone_to_appear = 7; // >= 7 to avoid block
 
         this.cells.set(3, 3, 1);
     }
@@ -203,7 +270,7 @@ class Space{
 
         // we propagate roots
         potential_root.forEach((value) => {
-            if(Math.random() < ROOT_EMERGENCE_PROBABILITY){
+            if(Math.random() < this.root_emergence_probability){
                 new_cells.set(value.x, value.y, 1);
             }
         });
@@ -224,7 +291,7 @@ class Space{
                 // if not we kill it (because it was put in the new cells before during the propagation step)
                 new_cells.set(x, y, 0);
             }
-            else if(Math.random() < ROOT_SPONTANEOUS_APPEARANCE_DYING_PROBABILITY){
+            else if(Math.random() < this.root_spontaneous_apperance_dying_probability){
                 // if the root can persist, we check if it dies spontaneously
                 new_cells.set(x, y, 0);
             }
@@ -235,7 +302,7 @@ class Space{
 
     rootPersist(x, y, cells) {
         var nb_root = this.numberRootsAround(x, y, cells);
-        return (MINIMUM_ROOTS_NEAR_TO_PERSIST<nb_root && nb_root < MAXIMUM_ROOTS_NEAR_TO_PERSIST);
+        return (this.minimum_roots_near_to_persist<nb_root && nb_root < this.maximum_roots_near_to_persist);
     }
 
     numberRootsAround(x, y, cells, size=1) {
@@ -261,10 +328,10 @@ class Space{
             for (var j = -1; j < 2; j++) {
                 if(!((i!=0 || j!=0) && cells.get(x+i, y+j) == 0)) continue;
                 var nb_root_around = this.numberRootsAround(x+i, y+j, cells);
-                if(nb_root_around < MINIMUM_ROOTS_NEAR_TO_APPEAR) continue;
-                if(nb_root_around > MAXIMUM_ROOTS_NEAR_TO_APPEAR) continue;
+                if(nb_root_around < this.minimum_roots_near_to_appear) continue;
+                if(nb_root_around > this.maximum_roots_near_to_appear) continue;
 
-                if(this.numberRootsAround(x+i, y+j, cells, 3) > MAXIMUM_ROOTS_IN_ZONE_TO_APPEAR) continue;
+                if(this.numberRootsAround(x+i, y+j, cells, 3) > this.maximum_roots_in_zone_to_appear) continue;
                     
                 potential_root.add({x: x+i, y: y+j});
             }
@@ -399,12 +466,6 @@ class DrawableSpace extends Space{
 
         window.addEventListener('contextmenu', e =>{
             e.preventDefault();
-            this.updateCells();
-            if(this.input_handler.isInputPressed("Control")){
-                for (var i = 0; i < 9; i++) {
-                    this.updateCells();
-                }
-            }
         });
 
         // Mouse down event to start dragging
@@ -438,6 +499,26 @@ class DrawableSpace extends Space{
                 this.is_paused = true;
                 this.menu.setPause(true);
             }
+        });
+
+        this.menu.addStepEventListener(() => {
+            this.updateCells();
+        });
+
+        this.menu.addStep10EventListener(() => {
+            for (var i = 0; i < 10; i++) {
+                this.updateCells();
+            }
+        });
+
+        this.menu.addParameterChangeEventListener(() => {
+            this.root_emergence_probability = this.menu.getRootEmergenceProbability();
+            this.root_spontaneous_apperance_dying_probability = this.menu.getRootSpontaneousAppearanceDyingProbability();
+            this.minimum_roots_near_to_persist = this.menu.getMinimumRootsNearToPersist();
+            this.maximum_roots_near_to_persist = this.menu.getMaximumRootsNearToPersist();
+            this.minimum_roots_near_to_appear = this.menu.getMinimumRootsNearToAppear();
+            this.maximum_roots_near_to_appear = this.menu.getMaximumRootsNearToAppear();
+            this.maximum_roots_in_zone_to_appear = this.menu.getMaximumRootsInZoneToAppear();
         });
     }
 }
