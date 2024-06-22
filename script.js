@@ -32,6 +32,8 @@ MAXIMUM_ROOTS_NEAR_TO_PERSIST = 8;
 MINIMUM_ROOTS_NEAR_TO_APPEAR = 1;
 MAXIMUM_ROOTS_NEAR_TO_APPEAR = 1;
 
+COULDOWN = 10;
+
 
 
 class InputHandler{
@@ -276,6 +278,7 @@ class DrawableSpace extends Space{
         this.menu = new Menu();
 
         this.is_paused = true;
+        this.menu.setPause(true);
         this.addAllEventListener();
     }
 
@@ -440,9 +443,18 @@ window.addEventListener('load', function(){
     var ctx = getCanvas();
     var space = new DrawableSpace(0, 0, 10, ctx);
 
+    var count = 0
+
     function draw() {
 
         space.drawSpace(ctx);
+        if(count == COULDOWN){
+            if(!space.is_paused){
+                space.updateCells();
+            }
+            count = 0;
+        }
+        count++;
     
         window.requestAnimationFrame(draw);
     }
