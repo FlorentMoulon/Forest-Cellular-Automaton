@@ -11,39 +11,117 @@ body{
 
 .menu{
     position: absolute;
-    top: 25px;
-    right: 25px;
     z-index: 10;
 
     display: flex;
+}
+
+#parameter-menu{
+    top: 25px;
+    left: 25px;
+
+    flex-direction: column;
+
     gap: 10px;
     padding: 2px 10px;
-    height: 5%;
     width: auto;
 }
 
-.menu .element{
+#parameter-menu .expander svg{
+    width: 5vh;
+    height: 5vh;
+}
+
+#parameter-menu .parameter-form{
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+#parameter-menu.expanded .parameter-form{
+    display: flex;
+}
+
+.parameter-form .element {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.parameter-form label {
+    flex: 3;
+    margin-right: 20px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.parameter-form input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    text-align: right;
+}
+
+.parameter-form input:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+@media (max-width: 600px) {
+    .parameter-form .element {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .parameter-form label {
+        text-align: left;
+        margin-bottom: 5px;
+    }
+
+    .parameter-form input {
+        text-align: left;
+    }
+}
+
+#play-menu{
+    top: 25px;
+    right: 25px;
+
+    gap: 10px;
+    padding: 2px 10px;
+    height: 5vh;
+    width: auto;
+}
+
+#play-menu .element{
     height: 100%;
 }
 
-.menu .element svg{
+#play-menu .element svg{
     width: 100%;
     height: 100%;
 }
 
 
-.play svg,
-.menu.paused .pause svg{
+#play svg,
+#clear svg,
+#play-menu.paused #pause svg{
     opacity: 0.5;
 }
 
-.menu.paused .play svg{
+#play-menu.paused #play svg,
+#play-menu.paused #clear svg{
     opacity: 1;
 }
 
 
 .acrylic {
-	border-radius: 2px;
+	border-radius: 5px;
 	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
 }
 @supports (backdrop-filter: blur(30px)) or (-webkit-backdrop-filter: blur(30px)) {

@@ -14,12 +14,62 @@
     <canvas id="canvas" class="">
     </canvas>
 
-    <div class="menu acrylic">
-        <div class="element play">
+    <div id="play-menu" class="menu acrylic">
+        <div class="element" id="play">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"/></svg>
         </div>
-        <div class="element pause">
+
+        <div class="element" id="pause">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg>
+        </div>
+
+        <div class="element" id="step">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-step-forward"><line x1="6" x2="6" y1="4" y2="20"/><polygon points="10,4 20,12 10,20"/></svg>
+        </div>
+
+        <div class="element" id="step10">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-step-forward"><line x1="2" x2="2" y1="4" y2="20"/><line x1="6" x2="6" y1="4" y2="20"/><polygon points="10,4 20,12 10,20"/></svg>
+        </div>
+
+        <div class="element" id="clear">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eraser"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+        </div>
+    </div>
+
+    <div id="parameter-menu" class="menu acrylic">
+        <div class="expander">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+
+        <div class="parameter-form">
+            <div class="element">
+                <label for="rootEmergenceProbability">Root Emergence Probability (0 to 1):</label>
+                <input type="number" id="rootEmergenceProbability" name="rootEmergenceProbability" min="0" max="1" step="0.01" value="0.5" required>
+            </div>
+            <div class="element">
+                <label for="rootSpontaneousAppearanceDyingProbability">Root Spontaneous Appearance Dying Probability (0 to 1):</label>
+                <input type="number" id="rootSpontaneousAppearanceDyingProbability" name="rootSpontaneousAppearanceDyingProbability" min="0" max="1" step="0.01" value="0" required>
+            </div>
+            <div class="element">
+                <label for="minimumRootsNearToPersist">Minimum Roots Near to Persist:</label>
+                <input type="number" id="minimumRootsNearToPersist" name="minimumRootsNearToPersist" min="0" max="8" value="0" required>
+            </div>
+            <div class="element">
+                <label for="maximumRootsNearToPersist">Maximum Roots Near to Persist:</label>
+                <input type="number" id="maximumRootsNearToPersist" name="maximumRootsNearToPersist" min="0" max="8" value="8" required>
+            </div>
+            <div class="element">
+                <label for="minimumRootsNearToAppear">Minimum Roots Near to Appear:</label>
+                <input type="number" id="minimumRootsNearToAppear" name="minimumRootsNearToAppear" min="0" max="8" value="1" required>
+            </div>
+            <div class="element">
+                <label for="maximumRootsNearToAppear">Maximum Roots Near to Appear:</label>
+                <input type="number" id="maximumRootsNearToAppear" name="maximumRootsNearToAppear" min="0" max="8" value="1" required>
+            </div>
+            <div class="element">
+                <label for="maximumRootsInZoneToAppear">Maximum Roots in Zone to Appear:</label>
+                <input type="number" id="maximumRootsInZoneToAppear" name="maximumRootsInZoneToAppear" min="0" max="24" value="7" required>
+            </div>
         </div>
     </div>
 </body>
