@@ -119,6 +119,7 @@ class Menu {
         this.play_button = this.play_menu.querySelector('#play');
         this.step_button = this.play_menu.querySelector('#step');
         this.step10_button = this.play_menu.querySelector('#step10');
+        this.clear_button = this.play_menu.querySelector('#clear');
 
         this.parameter_menu = document.querySelector('#parameter-menu');
         this.expander = this.parameter_menu.querySelector('.expander');
@@ -155,6 +156,10 @@ class Menu {
 
     addStep10EventListener(callback) {
         this.step10_button.addEventListener('click', callback);
+    }
+
+    addClearEventListener(callback) {
+        this.clear_button.addEventListener('click', callback);
     }
 
     addExpanderEventListener() {
@@ -339,6 +344,10 @@ class Space{
 
         return potential_root;
     }
+
+    clear() {
+        this.cells = new Cells();
+    }
 }
 
 class DrawableSpace extends Space{
@@ -454,6 +463,15 @@ class DrawableSpace extends Space{
         this.updateMinMax(this.min_y + delta.y, this.min_x + delta.x, this.max_x + delta.x);
     }
 
+    changeCellByMousePosition(mouse_x, mouse_y) {
+        var x = this.drag_system.getMouseGridPositionX(mouse_x, this.min_x, this.max_x, this.ctx.canvas.width);
+        var y = this.drag_system.getMouseGridPositionY(mouse_y, this.min_y, this.min_y+this.nb_cells_height, this.ctx.canvas.height);
+
+        var new_value = this.cells.get(x, y) == 1 ? 0 : 1;
+
+        this.cells.set(x, y, new_value);
+    }
+
     
     addAllEventListener() {
         window.addEventListener("wheel", e => {
@@ -464,8 +482,10 @@ class DrawableSpace extends Space{
             this.zoom(delta);
         });
 
-        window.addEventListener('contextmenu', e =>{
+        window.addEventListener('contextmenu', (e) => {
             e.preventDefault();
+
+            if(this.is_paused) this.changeCellByMousePosition(e.clientX, e.clientY);
         });
 
         // Mouse down event to start dragging
@@ -509,6 +529,10 @@ class DrawableSpace extends Space{
             for (var i = 0; i < 10; i++) {
                 this.updateCells();
             }
+        });
+
+        this.menu.addClearEventListener(() => {
+            if(this.is_paused) this.clear();
         });
 
         this.menu.addParameterChangeEventListener(() => {
