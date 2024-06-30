@@ -130,3 +130,7 @@ body{
 		backdrop-filter: blur(3px) saturate(125%);
 	}
 }
+
+#reset{
+    text-align: center;
+}
