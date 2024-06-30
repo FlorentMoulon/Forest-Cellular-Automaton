@@ -1,16 +1,13 @@
 
 
-window.addEventListener('resize', function(){
-    //game.getCanvas();
-});
-
 
 
 const COLOR = {
     empty: '#f2e8cf',
     root: '#a7c957',
     tree: '#386641',
-    border: '#3c2f2f',
+    border: '#386641',
+    black: '#3c2f2f',
     dark_green: '#386641',
     red: '#bc4749',
 }
@@ -24,6 +21,15 @@ BORDER_WIDTH_THRESHOLD = [
 
 COULDOWN = 10;
 
+DEFAULT_VALUES = {
+    root_emergence_probability: 0.5, // between 0 and 1, 0 = 0% and 1 = 100%
+    root_spontaneous_apperance_dying_probability: 0, // between 0 and 1, 0 = 0% and 1 = 100%
+    minimum_roots_near_to_persist: 0,
+    maximum_roots_near_to_persist: 8,
+    minimum_roots_near_to_appear: 1,
+    maximum_roots_near_to_appear: 1,
+    maximum_roots_in_zone_to_appear: 7,  // >= 7 to avoid block
+};
 
 
 
@@ -131,6 +137,8 @@ class Menu {
         this.maximumRootsNearToAppear = this.parameter_menu.querySelector('#maximumRootsNearToAppear');
         this.maximumRootsInZoneToAppear = this.parameter_menu.querySelector('#maximumRootsInZoneToAppear');
 
+        this.reset_button = this.parameter_menu.querySelector('#reset');
+
         this.addExpanderEventListener();
     }
 
@@ -205,6 +213,20 @@ class Menu {
         this.maximumRootsNearToAppear.addEventListener('change', callback);
         this.maximumRootsInZoneToAppear.addEventListener('change', callback);
     }
+    
+    addResetEventListener(callback) {
+        this.reset_button.addEventListener('click', callback);
+    }
+
+    setAllValues(values) {
+        this.rootEmergenceProbability.value = values.root_emergence_probability;
+        this.rootSpontaneousAppearanceDyingProbability.value = values.root_spontaneous_apperance_dying_probability;
+        this.minimumRootsNearToPersist.value = values.minimum_roots_near_to_persist;
+        this.maximumRootsNearToPersist.value = values.maximum_roots_near_to_persist;
+        this.minimumRootsNearToAppear.value = values.minimum_roots_near_to_appear;
+        this.maximumRootsNearToAppear.value = values.maximum_roots_near_to_appear;
+        this.maximumRootsInZoneToAppear.value = values.maximum_roots_in_zone_to_appear;
+    }
 }
 
 
@@ -233,17 +255,17 @@ class Space{
     constructor() {
         this.cells = new Cells();
 
-        this.root_emergence_probability = 0.5; // between 0 and 1, 0 = 0% and 1 = 100%
+        this.root_emergence_probability = DEFAULT_VALUES.rootEmergenceProbability; 
 
-        this.root_spontaneous_apperance_dying_probability = 0; // between 0 and 1, 0 = 0% and 1 = 100%
+        this.root_spontaneous_apperance_dying_probability = DEFAULT_VALUES.root_spontaneous_apperance_dying_probability; 
 
-        this.minimum_roots_near_to_persist = 0;
-        this.maximum_roots_near_to_persist = 8;
+        this.minimum_roots_near_to_persist = DEFAULT_VALUES.minimumRootsNearToPersist;
+        this.maximum_roots_near_to_persist = DEFAULT_VALUES.maximumRootsNearToPersist;
 
-        this.minimum_roots_near_to_appear = 1;
-        this.maximum_roots_near_to_appear = 1;
+        this.minimum_roots_near_to_appear = DEFAULT_VALUES.minimumRootsNearToAppear;
+        this.maximum_roots_near_to_appear = DEFAULT_VALUES.maximumRootsNearToAppear;
 
-        this.maximum_roots_in_zone_to_appear = 7; // >= 7 to avoid block
+        this.maximum_roots_in_zone_to_appear = DEFAULT_VALUES.maximumRootsInZoneToAppear;
 
         this.cells.set(3, 3, 1);
     }
@@ -472,9 +494,21 @@ class DrawableSpace extends Space{
         this.cells.set(x, y, new_value);
     }
 
+    resizeCanvas() {
+        this.ctx.canvas.width = window.innerWidth;
+        this.ctx.canvas.height = window.innerHeight;
+
+        this.updateMinMax(this.min_y, this.min_x, this.max_x);
+    }
+
     
     addAllEventListener() {
-        window.addEventListener("wheel", e => {
+        window.addEventListener('resize', (e) => {
+            this.resizeCanvas();
+        });
+
+
+        window.addEventListener("wheel", (e) => {
             var delta = Math.sign(e.deltaY);
             if(this.input_handler.isInputPressed("Shift")){
                 delta *= 10;
@@ -536,6 +570,17 @@ class DrawableSpace extends Space{
         });
 
         this.menu.addParameterChangeEventListener(() => {
+            this.root_emergence_probability = this.menu.getRootEmergenceProbability();
+            this.root_spontaneous_apperance_dying_probability = this.menu.getRootSpontaneousAppearanceDyingProbability();
+            this.minimum_roots_near_to_persist = this.menu.getMinimumRootsNearToPersist();
+            this.maximum_roots_near_to_persist = this.menu.getMaximumRootsNearToPersist();
+            this.minimum_roots_near_to_appear = this.menu.getMinimumRootsNearToAppear();
+            this.maximum_roots_near_to_appear = this.menu.getMaximumRootsNearToAppear();
+            this.maximum_roots_in_zone_to_appear = this.menu.getMaximumRootsInZoneToAppear();
+        });
+
+        this.menu.addResetEventListener(() => {
+            this.menu.setAllValues(DEFAULT_VALUES);
             this.root_emergence_probability = this.menu.getRootEmergenceProbability();
             this.root_spontaneous_apperance_dying_probability = this.menu.getRootSpontaneousAppearanceDyingProbability();
             this.minimum_roots_near_to_persist = this.menu.getMinimumRootsNearToPersist();
