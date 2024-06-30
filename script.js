@@ -1,9 +1,5 @@
 
 
-window.addEventListener('resize', function(){
-    //game.getCanvas();
-});
-
 
 
 const COLOR = {
@@ -498,9 +494,21 @@ class DrawableSpace extends Space{
         this.cells.set(x, y, new_value);
     }
 
+    resizeCanvas() {
+        this.ctx.canvas.width = window.innerWidth;
+        this.ctx.canvas.height = window.innerHeight;
+
+        this.updateMinMax(this.min_y, this.min_x, this.max_x);
+    }
+
     
     addAllEventListener() {
-        window.addEventListener("wheel", e => {
+        window.addEventListener('resize', (e) => {
+            this.resizeCanvas();
+        });
+
+
+        window.addEventListener("wheel", (e) => {
             var delta = Math.sign(e.deltaY);
             if(this.input_handler.isInputPressed("Shift")){
                 delta *= 10;
