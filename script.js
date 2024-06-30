@@ -10,7 +10,8 @@ const COLOR = {
     empty: '#f2e8cf',
     root: '#a7c957',
     tree: '#386641',
-    border: '#3c2f2f',
+    border: '#386641',
+    black: '#3c2f2f',
     dark_green: '#386641',
     red: '#bc4749',
 }
