@@ -255,17 +255,17 @@ class Space{
     constructor() {
         this.cells = new Cells();
 
-        this.root_emergence_probability = DEFAULT_VALUES.rootEmergenceProbability; 
+        this.root_emergence_probability = DEFAULT_VALUES.root_emergence_probability; 
 
         this.root_spontaneous_apperance_dying_probability = DEFAULT_VALUES.root_spontaneous_apperance_dying_probability; 
 
-        this.minimum_roots_near_to_persist = DEFAULT_VALUES.minimumRootsNearToPersist;
-        this.maximum_roots_near_to_persist = DEFAULT_VALUES.maximumRootsNearToPersist;
+        this.minimum_roots_near_to_persist = DEFAULT_VALUES.minimum_roots_near_to_persist;
+        this.maximum_roots_near_to_persist = DEFAULT_VALUES.maximum_roots_near_to_persist;
 
-        this.minimum_roots_near_to_appear = DEFAULT_VALUES.minimumRootsNearToAppear;
-        this.maximum_roots_near_to_appear = DEFAULT_VALUES.maximumRootsNearToAppear;
+        this.minimum_roots_near_to_appear = DEFAULT_VALUES.minimum_roots_near_to_appear;
+        this.maximum_roots_near_to_appear = DEFAULT_VALUES.maximum_roots_near_to_appear;
 
-        this.maximum_roots_in_zone_to_appear = DEFAULT_VALUES.maximumRootsInZoneToAppear;
+        this.maximum_roots_in_zone_to_appear = DEFAULT_VALUES.maximum_roots_in_zone_to_appear;
 
         this.cells.set(3, 3, 1);
     }
@@ -329,7 +329,7 @@ class Space{
 
     rootPersist(x, y, cells) {
         var nb_root = this.numberRootsAround(x, y, cells);
-        return (this.minimum_roots_near_to_persist<nb_root && nb_root < this.maximum_roots_near_to_persist);
+        return (this.minimum_roots_near_to_persist <= nb_root && nb_root <= this.maximum_roots_near_to_persist);
     }
 
     numberRootsAround(x, y, cells, size=1) {
